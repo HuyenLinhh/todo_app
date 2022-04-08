@@ -1,14 +1,30 @@
-import React, { useState, useEffect, useReducer, useRef } from 'react';
+import React, { useState, useReducer, } from 'react';
 import '../App.css'
+import AddComponents from './AddComponents';
+import ListComponent from './ListComponent';
+import uuid from 'react-uuid'
+
+class JobModel {
+    constructor(data) {
+        if (!data) {
+            data = {};
+        }
+        this.id = uuid();
+        this.title = data;
+
+    }
+}
 // state
-const initState = {
+const initialState = {
     job: '',
     jobs: []
+
 }
 //Action
 const SET_JOB = 'set_job'
 const ADD_JOB = 'add_job'
 const DELETE_JOB = 'delete_job'
+const UPDATE_JOB = 'update_job'
 
 const setJob = payload => {
     return {
@@ -18,16 +34,21 @@ const setJob = payload => {
 }
 
 const addJob = payload => {
-    console.log(payload)
     return {
         type: ADD_JOB,
         // job: '', //tranh lam nhu nay nen boc tach no ra
         payload
     }
 }
-const deleteJob = payload => {
+const deleteJob = (payload) => {
     return {
         type: DELETE_JOB,
+        payload
+    }
+}
+const updateJob = (payload) => {
+    return {
+        type: UPDATE_JOB,
         payload
     }
 }
@@ -42,77 +63,63 @@ const reducer = (state, action) => {
         case ADD_JOB:
             return {
                 ...state,
-                jobs: [...state.jobs, action.payload]
+                jobs: [...state.jobs, new JobModel(action.payload)]
             }
         case DELETE_JOB:
             const newJobs = [...state.jobs]
-            newJobs.splice(action.payload, 1)
-
+            const newList = newJobs.filter((item) => item.id !== action.payload)
             return {
 
                 ...state,
-                jobs: newJobs
+                jobs: newList
 
+            }
+        case UPDATE_JOB:
+            const newUpdateJobs = [...state.jobs]
+            const currentUpdate = newUpdateJobs.map((item) => {
+                if (item.id === action.payload.id) {
+                    return action.payload
+                } else {
+                    return item
+
+                }
+            })
+
+            return {
+                ...state,
+                jobs: currentUpdate
             }
 
         default: throw new Error('Invalid data')
     }
 
 }
+
 function Content() {
-    const [state, dispatch] = useReducer(reducer, initState)
+    const [state, dispatch] = useReducer(reducer, initialState)
 
     const { job, jobs } = state
-    // const [title, setTitle] = useState('');
 
-    /*  useEffect(() => {
-          console.log('Mounted');
-      } */
-    const inputFocus = useRef()
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        dispatch(addJob(job));
-        dispatch(setJob(''));
-        inputFocus.current.focus()
+    // const handleKeypress = e => {
+    //     if (e.keyCode === 13)
+    //         handleSubmit();
+    // }
+    const handleChangeInput = e => {
+        dispatch(setJob(e.target.value))
     }
-    // Change theme
-    const [theme, setTheme] = useState('dark')
-    const changeTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark')
-    } // => use Context Provider 
+    const handleDelete = e => {
+        dispatch(deleteJob(e))
+    }
+    const handleUpdate = e => {
+        dispatch(updateJob(e))
+    }
+    const [currentTodo, setCurrentTodo] = useState({});
 
-    const handleKeypress = e => {
-        if (e.keyCode === 13)
-            handleSubmit();
-    }
     return (
-        <div>
-            <div>
-                <div className={theme}>
-                    <button className='button-theme' onClick={changeTheme}> Change Theme </button>
-                </div>
-                <input className='task-input'
-                    ref={inputFocus}
-                    value={job}
-                    placeholder="Enter your list..."
-                    onChange={e => { dispatch(setJob(e.target.value)) }}
-                    onKeyPress={handleKeypress} />
-                <button className='button-add' onClick={handleSubmit} type='submit'>Add</button>
-            </div>
-
-
-            <ul>
-                {jobs.map((job, index) => (
-                    <li className='list-item' key={index}>{job}
-                        <button className='button-delete' onClick={() => dispatch(deleteJob(index))}> Delete </button>
-                        <button className='button-complete'> <i className='fa fa-check-circle'></i></button>
-                        <button className='button-edit'> <i className='fa fa-edit'></i></button>
-                        <button className='button-delete' onClick={() => dispatch(deleteJob(index))}> <i className='fa fa-trash'></i></button>
-                    </li>
-
-                ))}
-            </ul>
+        <div className='content'>
+            <AddComponents job={job} setJob={setJob} handleChangeInput={handleChangeInput} dispatch={dispatch} addJob={addJob} />
+            <ListComponent handleDelete={handleDelete} currentTodo={currentTodo} setCurrentTodo={setCurrentTodo} jobs={jobs} handleUpdate={handleUpdate} />
         </div>
     )
 }
-export default Content;
+export default Content

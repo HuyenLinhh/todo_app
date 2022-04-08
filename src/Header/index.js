@@ -2,11 +2,14 @@ import React from 'react';
 import Content from '../components/Content';
 import '../App.css'
 
-function Header() {
+function Header(theme) {
     return (
-        <div>
+        <div className='header'>
             <h1> To Do List</h1>
-            <Content />
+            <div className={theme}>
+                <Content />
+            </div>
+
         </div>
     );
 }
