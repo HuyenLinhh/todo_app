@@ -1,16 +1,13 @@
 import React from 'react';
-import Content from '../components/Content';
 import '../App.css'
 
-function Header(theme) {
+
+const Header = () => {
     return (
         <div className='header'>
-            <h1> To Do List</h1>
-            <div className={theme}>
-                <Content />
-            </div>
-
+            <h1> To do list</h1>
         </div>
-    );
+    )
 }
+
 export default Header;
